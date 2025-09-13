@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Financial Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white p-6 card-shadow">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                    <span class="text-2xl">🤖</span>
+                </div>
+                <h1 class="text-2xl font-bold">AI Financial Assistant</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm opacity-90">Balance: $12,450.32</span>
+                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span class="text-sm">👤</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-6 space-y-6">
+        <!-- Alert Banner -->
+        <div id="alertBanner" class="bg-red-100 border-l-4 border-red-500 p-4 rounded-r-lg hidden">
+            <div class="flex items-center">
+                <span class="text-red-600 mr-2">⚠️</span>
+                <p class="text-red-700 font-medium" id="alertMessage"></p>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Monthly Spending</p>
+                        <p class="text-2xl font-bold text-gray-800" id="monthlySpending">$3,247.89</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">💳</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm">
+                        <span class="text-red-500">↗️ +12%</span>
+                        <span class="text-gray-600 ml-2">vs last month</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Budget Remaining</p>
+                        <p class="text-2xl font-bold text-green-600" id="budgetRemaining">$1,752.11</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">🎯</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Savings Goal</p>
+                        <p class="text-2xl font-bold text-purple-600" id="savingsProgress">$8,450</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">💰</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">84% of $10,000 goal</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">AI Prediction</p>
+                        <p class="text-2xl font-bold text-orange-600" id="aiPrediction">$3,890</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center pulse-animation">
+                        <span class="text-2xl">🔮</span>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">Next month estimate</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Spending Analysis Chart -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl card-shadow">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Predictive Spending Analysis</h2>
+                    <select class="border border-gray-300 rounded-lg px-3 py-1 text-sm" id="chartPeriod">
+                        <option>Last 6 months</option>
+                        <option>Last year</option>
+                        <option>All time</option>
+                    </select>
+                </div>
+                <canvas id="spendingChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Expense Categories -->
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">AI Categorization</h2>
+                <div class="space-y-4" id="categoryList">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🍕</span>
+                            <div>
+                                <p class="font-medium text-gray-800">Food & Dining</p>
+                                <p class="text-sm text-gray-600">45 transactions</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-gray-800">$1,234</p>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🚗</span>
+                            <div>
+                                <p class="font-medium text-gray-800">Transportation</p>
+                                <p class="text-sm text-gray-600">23 transactions</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-gray-800">$567</p>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🛒</span>
+                            <div>
+                                <p class="font-medium text-gray-800">Shopping</p>
+                                <p class="text-sm text-gray-600">31 transactions</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-gray-800">$892</p>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">🏠</span>
+                            <div>
+                                <p class="font-medium text-gray-800">Bills & Utilities</p>
+                                <p class="text-sm text-gray-600">8 transactions</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-gray-800">$445</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals and Transactions -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Financial Goals -->
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Financial Goals</h2>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors" onclick="addGoal()">
+                        + Add Goal
+                    </button>
+                </div>
+                <div class="space-y-4" id="goalsList">
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-medium text-gray-800">Emergency Fund</h3>
+                            <span class="text-sm text-gray-600">84%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 84%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600">$8,450 of $10,000</p>
+                    </div>
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-medium text-gray-800">Vacation Fund</h3>
+                            <span class="text-sm text-gray-600">32%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 32%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600">$960 of $3,000</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Recent Transactions</h2>
+                    <button class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors" onclick="addTransaction()">
+                        + Add Transaction
+                    </button>
+                </div>
+                <div class="space-y-3" id="transactionsList">
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <span class="text-lg">🍕</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">Pizza Palace</p>
+                                <p class="text-sm text-gray-600">Food & Dining • Today</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-red-600">-$24.99</p>
+                    </div>
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <span class="text-lg">⛽</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">Shell Gas Station</p>
+                                <p class="text-sm text-gray-600">Transportation • Yesterday</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-red-600">-$45.20</p>
+                    </div>
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <span class="text-lg">💰</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">Salary Deposit</p>
+                                <p class="text-sm text-gray-600">Income • 2 days ago</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-green-600">+$3,200.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div class="bg-white p-6 rounded-xl card-shadow">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">AI Financial Insights</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex items-center mb-2">
+                        <span class="text-lg mr-2">💡</span>
+                        <h3 class="font-medium text-blue-800">Spending Pattern</h3>
+                    </div>
+                    <p class="text-sm text-blue-700">You spend 23% more on weekends. Consider meal planning to reduce food costs.</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                    <div class="flex items-center mb-2">
+                        <span class="text-lg mr-2">📈</span>
+                        <h3 class="font-medium text-green-800">Savings Opportunity</h3>
+                    </div>
+                    <p class="text-sm text-green-700">You could save $180/month by switching to a high-yield savings account.</p>
+                </div>
+                <div class="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                    <div class="flex items-center mb-2">
+                        <span class="text-lg mr-2">🎯</span>
+                        <h3 class="font-medium text-purple-800">Goal Progress</h3>
+                    </div>
+                    <p class="text-sm text-purple-700">At current rate, you'll reach your emergency fund goal 2 months early!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div id="transactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4">Add Transaction</h3>
+            <form id="transactionForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <input type="text" id="transactionDesc" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="e.g., Coffee Shop">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    <input type="number" id="transactionAmount" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="0.00" step="0.01">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="transactionCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="food">Food & Dining</option>
+                        <option value="transport">Transportation</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="bills">Bills & Utilities</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closeTransactionModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div id="goalModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4">Add Financial Goal</h3>
+            <form id="goalForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Goal Name</label>
+                    <input type="text" id="goalName" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="e.g., New Car">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Amount</label>
+                    <input type="number" id="goalAmount" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="0.00" step="0.01">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Progress</label>
+                    <input type="number" id="goalProgress" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="0.00" step="0.01">
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closeGoalModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">Add Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart
+        const ctx = document.getElementById('spendingChart').getContext('2d');
+        const spendingChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Actual Spending',
+                    data: [2800, 3200, 2900, 3400, 3100, 3247],
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'AI Prediction',
+                    data: [null, null, null, null, null, 3247, 3890],
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Budget tracking and alerts
+        let monthlyBudget = 5000;
+        let currentSpending = 3247.89;
+        
+        function checkBudgetAlerts() {
+            const spendingPercentage = (currentSpending / monthlyBudget) * 100;
+            const alertBanner = document.getElementById('alertBanner');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            if (spendingPercentage > 90) {
+                alertBanner.classList.remove('hidden');
+                alertMessage.textContent = `Budget Alert: You've spent ${spendingPercentage.toFixed(1)}% of your monthly budget!`;
+            } else if (spendingPercentage > 75) {
+                alertBanner.classList.remove('hidden');
+                alertBanner.className = 'bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-r-lg';
+                alertMessage.textContent = `Budget Warning: You've spent ${spendingPercentage.toFixed(1)}% of your monthly budget.`;
+                alertMessage.className = 'text-yellow-700 font-medium';
+            }
+        }
+
+        // AI Categorization function
+        function categorizeTransaction(description) {
+            const categories = {
+                'food': ['pizza', 'restaurant', 'coffee', 'grocery', 'starbucks', 'mcdonalds'],
+                'transport': ['gas', 'uber', 'taxi', 'parking', 'metro', 'bus'],
+                'shopping': ['amazon', 'target', 'walmart', 'mall', 'store'],
+                'bills': ['electric', 'water', 'internet', 'phone', 'rent', 'mortgage'],
+                'entertainment': ['movie', 'netflix', 'spotify', 'game', 'concert']
+            };
+            
+            const desc = description.toLowerCase();
+            for (let category in categories) {
+                if (categories[category].some(keyword => desc.includes(keyword))) {
+                    return category;
+                }
+            }
+            return 'other';
+        }
+
+        // Transaction management
+        function addTransaction() {
+            document.getElementById('transactionModal').classList.remove('hidden');
+        }
+
+        function closeTransactionModal() {
+            document.getElementById('transactionModal').classList.add('hidden');
+            document.getElementById('transactionForm').reset();
+        }
+
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const desc = document.getElementById('transactionDesc').value;
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const category = document.getElementById('transactionCategory').value;
+            
+            if (desc && amount) {
+                // AI categorization suggestion
+                const suggestedCategory = categorizeTransaction(desc);
+                
+                // Add to transactions list
+                const transactionsList = document.getElementById('transactionsList');
+                const categoryEmojis = {
+                    'food': '🍕', 'transport': '🚗', 'shopping': '🛒', 
+                    'bills': '🏠', 'entertainment': '🎬', 'income': '💰'
+                };
+                
+                const transactionHTML = `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <span class="text-lg">${categoryEmojis[category] || '💳'}</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">${desc}</p>
+                                <p class="text-sm text-gray-600">${category.charAt(0).toUpperCase() + category.slice(1)} • Just now</p>
+                            </div>
+                        </div>
+                        <p class="font-semibold ${amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                            ${amount > 0 ? '+' : ''}$${Math.abs(amount).toFixed(2)}
+                        </p>
+                    </div>
+                `;
+                
+                transactionsList.insertAdjacentHTML('afterbegin', transactionHTML);
+                
+                // Update spending if it's an expense
+                if (amount < 0) {
+                    currentSpending += Math.abs(amount);
+                    document.getElementById('monthlySpending').textContent = '$' + currentSpending.toFixed(2);
+                    checkBudgetAlerts();
+                }
+                
+                closeTransactionModal();
+            }
+        });
+
+        // Goal management
+        function addGoal() {
+            document.getElementById('goalModal').classList.remove('hidden');
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goalModal').classList.add('hidden');
+            document.getElementById('goalForm').reset();
+        }
+
+        document.getElementById('goalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('goalName').value;
+            const target = parseFloat(document.getElementById('goalAmount').value);
+            const progress = parseFloat(document.getElementById('goalProgress').value) || 0;
+            
+            if (name && target) {
+                const percentage = Math.min((progress / target) * 100, 100);
+                
+                const goalsList = document.getElementById('goalsList');
+                const goalHTML = `
+                    <div class="p-4 border border-gray-200 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-medium text-gray-800">${name}</h3>
+                            <span class="text-sm text-gray-600">${percentage.toFixed(0)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600">$${progress.toLocaleString()} of $${target.toLocaleString()}</p>
+                    </div>
+                `;
+                
+                goalsList.insertAdjacentHTML('beforeend', goalHTML);
+                closeGoalModal();
+            }
+        });
+
+        // Predictive analytics simulation
+        function updatePredictions() {
+            const predictions = [3890, 3654, 4123, 3567, 3789];
+            const randomPrediction = predictions[Math.floor(Math.random() * predictions.length)];
+            document.getElementById('aiPrediction').textContent = '$' + randomPrediction.toLocaleString();
+        }
+
+        // Initialize alerts checkg
+        checkBudgetAlerts();
+        
+        // Update predictions every 30 seconds for demo
+        setInterval(updatePredictions, 30000);
+
+        // Chart period change handler
+        document.getElementById('chartPeriod').addEventListener('change', function(e) {
+            // In a real app, this would fetch new data
+            spendingChart.data.labels = e.target.value === 'Last year' ? 
+                ['Q1', 'Q2', 'Q3', 'Q4'] : 
+                ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            spendingChart.update();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97e5b8dca5f09f44',t:'MTc1Nzc0NjM0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
